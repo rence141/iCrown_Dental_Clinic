@@ -18,6 +18,7 @@ Thumbs.db
 
 # Environment files (if using .env)
 .env
+.env.example
 
 # VS Code settings
 .vscode/
@@ -100,3 +101,25 @@ jspm_packages/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Security and credentials
+*.key
+*.pem
+*.p12
+*.pfx
+certificates/
+ssl/
+credentials.json
+config.json
+secrets/
+private/
+
+# Database backup files
+*.sql
+*.dump
+*.backup
+
+# API keys and tokens
+api-keys.txt
+tokens.txt
+secrets.txt
