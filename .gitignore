@@ -123,3 +123,11 @@ private/
 api-keys.txt
 tokens.txt
 secrets.txt
+
+# Documentation with sensitive info
+VULNERABILITIES.md
+MONGODB_SETUP.md
+build-instructions.md
+security-checklist.md
+*.md.bak
+*.md.tmp
