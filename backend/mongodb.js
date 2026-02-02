@@ -4,8 +4,8 @@ class MongoDB {
     constructor() {
         this.client = null;
         this.db = null;
-        // Use your MongoDB Atlas connection string
-        this.uri = process.env.MONGODB_URI || 'mongodb+srv://lnfp2023970752211_db_user:ExVQjg7iTpzSq08r@cluster0.cetrfnx.mongodb.net/?appName=Cluster0';
+        // Use your MongoDB Atlas connection string from environment variables
+        this.uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/icrown_dental';
         this.dbName = process.env.DB_NAME || 'icrown_dental';
     }
 
