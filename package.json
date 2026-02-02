@@ -1,0 +1,69 @@
+{
+  "name": "electron-app",
+  "version": "1.0.0",
+  "description": "A modern desktop application built with Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "webpack --mode production",
+    "build-dev": "webpack --mode development",
+    "watch": "webpack --mode development --watch",
+    "rebuild": "node-gyp rebuild",
+    "build:win": "electron-builder --win",
+    "dist": "electron-builder --publish=never",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "electron",
+    "desktop",
+    "app"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^25.1.8",
+    "node-gyp": "^10.0.1"
+  },
+  "dependencies": {
+    "@babel/core": "^7.28.6",
+    "@babel/plugin-transform-runtime": "^7.28.5",
+    "@babel/preset-env": "^7.28.6",
+    "@babel/preset-react": "^7.28.5",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.3",
+    "dotenv": "^16.6.1",
+    "html-webpack-plugin": "^5.6.6",
+    "mongodb": "^6.21.0",
+    "node-addon-api": "^8.5.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
+  },
+  "build": {
+    "appId": "com.icrown.dental",
+    "productName": "iCrown Dental Clinic",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "assets/icon.ico"
+    },
+    "files": [
+      "main.js",
+      "preload-simple.js",
+      "preload.js",
+      "frontend/**/*",
+      "backend/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ]
+  }
+}
