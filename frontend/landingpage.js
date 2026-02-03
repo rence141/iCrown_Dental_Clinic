@@ -354,15 +354,19 @@ const LoginForm = () => {
       // Google Sign-In Button
       React.createElement('button', {
         type: 'button',
-        className: 'btn btn-google btn-full',
+        className: 'google-signin-button',
         onClick: () => {
           // Initialize Google Sign-In when button is clicked
           initializeGoogleSignIn();
         },
         disabled: googleLoading
       },
-        React.createElement('i', { className: 'bi bi-google me-2' }),
-        googleLoading ? 'Opening Google Login...' : 'Sign in with Google (Browser)'
+        React.createElement('div', { className: 'google-icon-wrapper' },
+          React.createElement('div', { className: 'google-icon' })
+        ),
+        React.createElement('p', { className: 'google-button-text' },
+          googleLoading ? 'Opening Google Login...' : 'Sign in with Google'
+        )
       ),
     )
   );
