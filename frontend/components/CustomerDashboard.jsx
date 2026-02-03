@@ -1,15 +1,25 @@
 const { useState, useEffect } = React;
 
 const CustomerDashboard = () => {
+  // --- Dynamic User Data (must be declared before using in state initializers) ---
+  const user = window.currentUser || {};
+
   const [activeTab, setActiveTab] = useState('overview');
   const [showBooking, setShowBooking] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [payments, setPayments] = useState([]);
   const [treatmentHistory, setTreatmentHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [profileForm, setProfileForm] = useState({
+    name: user.name || '',
+    email: user.email || '',
+    phone: user.phone || '',
+    dob: user.dob || ''
+  });
 
-  // --- Dynamic User Data ---
-  const user = window.currentUser || {};
   const userName = user.name || 'Valued Customer';
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'VC';
   const patientId = user.id ? `#${String(user.id).padStart(4, '0')}` : 'Patient';
@@ -24,7 +34,30 @@ const CustomerDashboard = () => {
     try {
       setLoading(true);
       // Load appointments
-      if (window.electronAPI) {
+      if (window.electronAPI && user && user.id) {
+        // Load the most accurate user profile from the backend (including Google data)
+        try {
+          const freshProfile = await window.electronAPI.user.getProfile(user.id);
+          if (freshProfile) {
+            const mergedUser = { ...user, ...freshProfile };
+            window.currentUser = mergedUser;
+            try {
+              localStorage.setItem('currentUser', JSON.stringify(mergedUser));
+            } catch (e) {
+              console.error('Failed to persist refreshed profile:', e);
+            }
+            // Update derived state for profile form
+            setProfileForm({
+              name: mergedUser.name || '',
+              email: mergedUser.email || '',
+              phone: mergedUser.phone || '',
+              dob: mergedUser.dob || ''
+            });
+          }
+        } catch (e) {
+          console.error('Failed to load fresh user profile:', e);
+        }
+
         const userAppointments = await window.electronAPI.invoke('appointment:getByPatient', user.id);
         setAppointments(userAppointments || []);
         
@@ -290,22 +323,88 @@ const CustomerDashboard = () => {
       React.createElement('div', { className: 'profile-form' },
         React.createElement('div', { className: 'form-group' },
           React.createElement('label', null, 'Full Name'),
-          React.createElement('input', { type: 'text', defaultValue: userName, className: 'form-control' })
+          React.createElement('input', {
+            type: 'text',
+            className: 'form-control',
+            value: profileForm.name,
+            onChange: (e) => setProfileForm({ ...profileForm, name: e.target.value })
+          })
         ),
         React.createElement('div', { className: 'form-group' },
           React.createElement('label', null, 'Email'),
-          React.createElement('input', { type: 'email', defaultValue: user.email, className: 'form-control' })
+          React.createElement('input', {
+            type: 'email',
+            className: 'form-control',
+            value: profileForm.email,
+            onChange: (e) => setProfileForm({ ...profileForm, email: e.target.value })
+          })
         ),
         React.createElement('div', { className: 'form-group' },
           React.createElement('label', null, 'Phone'),
-          React.createElement('input', { type: 'tel', defaultValue: user.phone || '', className: 'form-control' })
+          React.createElement('input', {
+            type: 'tel',
+            className: 'form-control',
+            value: profileForm.phone,
+            onChange: (e) => setProfileForm({ ...profileForm, phone: e.target.value })
+          })
         ),
         React.createElement('div', { className: 'form-group' },
           React.createElement('label', null, 'Date of Birth'),
-          React.createElement('input', { type: 'date', defaultValue: user.dob || '', className: 'form-control' })
+          React.createElement('input', {
+            type: 'date',
+            className: 'form-control',
+            value: profileForm.dob || '',
+            onChange: (e) => setProfileForm({ ...profileForm, dob: e.target.value })
+          })
         ),
+        profileError && React.createElement('div', { className: 'error-message show' }, profileError),
+        profileSuccess && React.createElement('div', { className: 'success-message show' }, profileSuccess),
         React.createElement('div', { className: 'form-actions' },
-          React.createElement('button', { className: 'btn-primary' }, 'Save Changes'),
+          React.createElement('button', {
+            className: 'btn-primary',
+            disabled: profileSaving,
+            onClick: async () => {
+              setProfileError('');
+              setProfileSuccess('');
+              setProfileSaving(true);
+              try {
+                if (!profileForm.name.trim()) {
+                  throw new Error('Full Name is required.');
+                }
+                if (!profileForm.email.trim()) {
+                  throw new Error('Email is required.');
+                }
+                if (!profileForm.email.includes('@') || !profileForm.email.includes('.')) {
+                  throw new Error('Please enter a valid email address.');
+                }
+
+                if (window.electronAPI && window.electronAPI.user && window.electronAPI.user.updateProfile) {
+                  const updated = await window.electronAPI.user.updateProfile(user.id, {
+                    name: profileForm.name.trim(),
+                    email: profileForm.email.trim()
+                    // phone and dob can be wired later when backend supports them
+                  });
+
+                  const mergedUser = { ...user, ...updated, phone: profileForm.phone, dob: profileForm.dob };
+                  window.currentUser = mergedUser;
+                  try {
+                    localStorage.setItem('currentUser', JSON.stringify(mergedUser));
+                  } catch (e) {
+                    console.error('Failed to persist updated profile:', e);
+                  }
+
+                  setProfileSuccess('Profile updated successfully.');
+                } else {
+                  throw new Error('Profile update service is not available.');
+                }
+              } catch (err) {
+                console.error('Profile update failed:', err);
+                setProfileError(err.message || 'Failed to update profile. Please try again.');
+              } finally {
+                setProfileSaving(false);
+              }
+            }
+          }, profileSaving ? 'Saving…' : 'Save Changes'),
           React.createElement('button', { className: 'btn-outline' }, 'Change Password')
         )
       )
@@ -323,10 +422,34 @@ const CustomerDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.currentUser = null;
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      // Prefer logging out all sessions for this user on the backend
+      if (user && user.id && window.electronAPI && window.electronAPI.auth && window.electronAPI.auth.logoutAll) {
+        try {
+          await window.electronAPI.auth.logoutAll(user.id);
+        } catch (e) {
+          console.error('Backend logoutAll failed (continuing client-side cleanup):', e);
+        }
+      } else {
+        // Fallback: try single-session logout if we have a sessionId
+        const sessionId = localStorage.getItem('sessionId');
+        if (sessionId && window.electronAPI && window.electronAPI.auth && window.electronAPI.auth.logout) {
+          try {
+            await window.electronAPI.auth.logout(sessionId);
+          } catch (e) {
+            console.error('Backend logout failed (continuing client-side cleanup):', e);
+          }
+        }
+      }
+    } finally {
+      // Clear client-side auth state
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('sessionId');
+      window.currentUser = null;
+      window.currentPage = 'landing';
+      window.location.reload();
+    }
   };
 
   if (loading) {

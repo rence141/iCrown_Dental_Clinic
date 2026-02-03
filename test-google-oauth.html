@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google OAuth Test</title>
+    <meta name="google-signin-client_id" content="95438536693-h3dtd3nq78ip1dpfskvu577o07042rgm.apps.googleusercontent.com">
+</head>
+<body>
+    <h1>Google OAuth Test Page</h1>
+    <p>Use this page to test Google OAuth configuration</p>
+    
+    <div id="g_id_onload"
+         data-client_id="95438536693-h3dtd3nq78ip1dpfskvu577o07042rgm.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleSignIn"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleSignIn(response) {
+            console.log('Google Sign-In response:', response);
+            console.log('ID Token:', response.credential);
+            
+            // Here you would send the token to your backend
+            // For now, just display it
+            document.getElementById('result').innerHTML = `
+                <h3>Success!</h3>
+                <p>ID Token received (first 50 chars): ${response.credential.substring(0, 50)}...</p>
+                <p>Full token logged to console</p>
+            `;
+        }
+    </script>
+
+    <div id="result"></div>
+</body>
+</html>

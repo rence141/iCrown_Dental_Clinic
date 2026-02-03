@@ -18,6 +18,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     logoutAll: async (userId) => {
       return await ipcRenderer.invoke('auth:logoutAll', userId);
     }
+    ,
+    googleLogin: async (googleToken) => {
+      return await ipcRenderer.invoke('auth:googleLogin', googleToken);
+    },
+    googleConfig: async () => {
+      return await ipcRenderer.invoke('auth:googleConfig');
+    },
+    getCurrentUser: async () => {
+      return await ipcRenderer.invoke('auth:getCurrentUser');
+    }
   },
   
   // Real User APIs connected to backend
@@ -89,8 +99,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getVersion: () => process.versions.electron,
   getPlatform: () => process.platform,
   openDevTools: () => ipcRenderer.invoke('window:openDevTools'),
+  openExternal: (url) => ipcRenderer.invoke('window:openExternal', url),
+  openAuthWindow: (url) => ipcRenderer.invoke('auth:openAuthWindow', url),
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
   
+  // Event listeners
+  onAuthLoggedIn: (callback) => {
+    ipcRenderer.on('auth:logged-in', (event, user) => {
+      try { callback(user); } catch (e) { /* ignore listener errors */ }
+    });
+  },
+
   // Generic invoke method for direct access
   invoke: (channel, ...args) => {
     return ipcRenderer.invoke(channel, ...args);

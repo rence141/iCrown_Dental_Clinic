@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Login - iCrown Dental Clinic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 2rem;
+            border-radius: 50%;
+        }
+        .google-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .google-btn:hover {
+            background: #357ae8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+        .loading {
+            display: none;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="images/main-logo-no-bg.png" alt="iCrown Dental Clinic" class="logo">
+        
+        <h2>Welcome to iCrown Dental Clinic</h2>
+        <p class="text-muted">Sign in with your Google account to continue</p>
+        
+        <div id="error" class="error alert alert-danger"></div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Signing in with Google...</p>
+        </div>
+        
+        <a href="#" id="googleSignInBtn" class="google-btn">
+            <i class="bi bi-google"></i>
+            Sign in with Google
+        </a>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                <i class="bi bi-shield-check"></i>
+                Your login is secure and encrypted
+            </small>
+        </div>
+    </div>
+
+    <script>
+        let googleConfig = null;
+
+        // Fetch Google OAuth configuration from backend
+        async function fetchGoogleConfig() {
+            try {
+                const response = await fetch('http://localhost:3001/google-config');
+                if (response.ok) {
+                    googleConfig = await response.json();
+                    console.log('Google OAuth config loaded:', googleConfig);
+                } else {
+                    throw new Error('Failed to load Google OAuth configuration');
+                }
+            } catch (error) {
+                console.error('Error loading Google config:', error);
+                document.getElementById('error').textContent = 'Failed to load Google OAuth configuration. Please try again.';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('googleSignInBtn').style.display = 'none';
+            }
+        }
+
+        // Generate Google OAuth URL
+        function getGoogleAuthUrl() {
+            if (!googleConfig) {
+                throw new Error('Google OAuth configuration not loaded');
+            }
+
+            const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+            authUrl.searchParams.set('client_id', googleConfig.clientId);
+            authUrl.searchParams.set('redirect_uri', googleConfig.redirectUri);
+            authUrl.searchParams.set('response_type', 'code');
+            authUrl.searchParams.set('scope', googleConfig.scope);
+            authUrl.searchParams.set('access_type', 'offline');
+            authUrl.searchParams.set('prompt', 'consent');
+            authUrl.searchParams.set('state', 'google-callback');
+            
+            return authUrl.toString();
+        }
+
+        // Handle Google Sign-In
+        document.getElementById('googleSignInBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            const button = document.getElementById('googleSignInBtn');
+            
+            errorDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            button.style.display = 'none';
+            
+            // Redirect to Google OAuth
+            window.location.href = getGoogleAuthUrl();
+        });
+
+        // Handle URL parameters (for error handling)
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = 'Login failed: ' + error;
+            errorDiv.style.display = 'block';
+        }
+
+        // Load configuration when page loads
+        fetchGoogleConfig();
+    </script>
+</body>
+</html>

@@ -930,3 +930,94 @@
     [data-theme="dark"] .security-note {
         color: #c0c0c0;
     }
+
+    /* Google Sign-In Button Styles */
+    .btn-google {
+        background: #ffffff;
+        border: 2px solid #dadce0;
+        color: #3c4043;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-top: 16px;
+    }
+
+    .btn-google:hover {
+        background: #f8f9fa;
+        border-color: #d2e3fc;
+        color: #1a73e8;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+    }
+
+    .btn-google:disabled {
+        background: #f8f9fa;
+        border-color: #dadce0;
+        color: #5f6368;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-google .bi-google {
+        color: #4285f4;
+        font-size: 18px;
+    }
+
+    /* Auth Divider */
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        margin: 24px 0;
+        position: relative;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #dadce0;
+    }
+
+    .auth-divider span {
+        padding: 0 16px;
+        color: #5f6368;
+        font-size: 14px;
+        font-weight: 500;
+        background: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Dark theme for Google button */
+    [data-theme="dark"] .btn-google {
+        background: #2d2d2d;
+        border-color: #404040;
+        color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .btn-google:hover {
+        background: #3d3d3d;
+        border-color: #4285f4;
+        color: #4285f4;
+    }
+
+    [data-theme="dark"] .btn-google:disabled {
+        background: #2d2d2d;
+        border-color: #404040;
+        color: #9e9e9e;
+    }
+
+    [data-theme="dark"] .auth-divider::before,
+    [data-theme="dark"] .auth-divider::after {
+        background: #404040;
+    }
+
+    [data-theme="dark"] .auth-divider span {
+        color: #9e9e9e;
+        background: #2d2d2d;
+    }
