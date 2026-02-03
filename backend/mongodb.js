@@ -11,6 +11,49 @@ class MongoDB {
 
     async connect() {
         try {
+            // If environment variable isn't set (wasn't loaded by main), try to load .env.local here
+            if (!process.env.MONGODB_URI) {
+                try {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const envPath = path.join(__dirname, '..', '.env.local');
+                    if (fs.existsSync(envPath)) {
+                        const buf = fs.readFileSync(envPath);
+                        let content = buf.toString('utf8');
+                        if (content.includes('\uFFFD')) content = buf.toString('latin1');
+                        content = content.replace(/^\uFEFF/, '').replace(/\uFFFD/g, '');
+                            // Remove non-printable / non-ASCII noise that can appear from encoding issues
+                            const asciiContent = content.replace(/[^\x20-\x7E\r\n]/g, '');
+
+                            // Extract MONGODB_URI and DB_NAME with regex from the sanitized content
+                            const uriMatch = asciiContent.match(/MONGODB_URI\s*=\s*(.*)/i);
+                            const dbMatch = asciiContent.match(/DB_NAME\s*=\s*(.*)/i);
+                            if (uriMatch && uriMatch[1]) {
+                                const val = uriMatch[1].trim();
+                                if (!process.env.MONGODB_URI) process.env.MONGODB_URI = val;
+                            }
+                            if (dbMatch && dbMatch[1]) {
+                                const val = dbMatch[1].trim();
+                                if (!process.env.DB_NAME) process.env.DB_NAME = val;
+                            }
+                        console.log('Loaded missing environment variables from .env.local in backend');
+                    }
+                } catch (e) {
+                    console.error('Error loading .env.local from backend:', e.message);
+                }
+            }
+
+            // Refresh uri/dbName from environment in case they were loaded above
+            console.log('Before refresh - this.uri:', this.uri);
+            console.log('Before refresh - process.env.MONGODB_URI:', process.env.MONGODB_URI);
+            this.uri = process.env.MONGODB_URI || this.uri;
+            this.dbName = process.env.DB_NAME || this.dbName;
+            console.log('After refresh - this.uri:', this.uri);
+            console.log('After refresh - this.dbName:', this.dbName);
+
+            console.log('MongoDB attempting to connect with URI:', this.uri);
+            console.log('Environment MONGODB_URI:', process.env.MONGODB_URI);
+            
             // MongoDB Atlas connection options
             const options = {
                 maxPoolSize: 10,
