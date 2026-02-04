@@ -1,12 +1,12 @@
 /* Booking Calendar Styles */
 .booking-calendar-container {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 2rem;
   background: white;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  width: 95%;
+  width: 100%;
 }
 
 .booking-header {
@@ -73,8 +73,10 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
   width: 100%;
+  /* Added to prevent container stretching */
+  box-sizing: border-box; 
 }
 
 .calendar-header-day {
@@ -88,7 +90,9 @@
 }
 
 .calendar-day {
-  aspect-ratio: 1;
+  /* Remove aspect-ratio: 1 if it causes vertical overflow */
+  aspect-ratio: 1 / 1; 
+  width: 100%; /* Ensure it takes full width of the column */
   border: none;
   background: white;
   border-radius: 8px;
@@ -100,7 +104,9 @@
   font-weight: 500;
   position: relative;
   font-size: 0.95rem;
-  min-height: 60px;
+  /* Reduced min-height to prevent vertical blowout */
+  min-height: 45px; 
+  padding: 5px; /* Add small padding to keep text off edges */
 }
 
 .calendar-day.empty {
@@ -208,9 +214,9 @@
 }
 
 .service-card.selected {
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(244, 228, 188, 0.15) 100%);
-  border-color: #d4af37;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 223, 0, 0.2) 100%);
+  border: 3px solid #FFD700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
 }
 
 .service-name {
@@ -263,9 +269,9 @@
 }
 
 .time-slot.selected {
-  background: linear-gradient(135deg, #d4af37 0%, #f4e4bc 100%);
-  color: #1a1a1a;
-  border-color: #d4af37;
+  background: linear-gradient(135deg, #b8941f 0%, #d4af37 100%);
+  color: white;
+  border-color: #b8941f;
   font-weight: 600;
 }
 
@@ -274,6 +280,30 @@
   color: #ccc;
   cursor: not-allowed;
   border-color: #e9ecef;
+}
+
+[data-theme="dark"] .time-slot {
+  background: #3d3d3d;
+  border-color: #4a4a4a;
+  color: #c0c0c0;
+}
+
+[data-theme="dark"] .time-slot:hover:not(.unavailable):not(.selected) {
+  border-color: rgba(212, 175, 55, 0.8);
+  background: #434343;
+}
+
+[data-theme="dark"] .time-slot.selected {
+  background: linear-gradient(135deg, #b8941f 0%, #d4af37 100%);
+  color: #0f172a;
+  border: 3px solid #ffd700;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35), 0 10px 24px rgba(212, 175, 55, 0.28);
+}
+
+[data-theme="dark"] .time-slot.unavailable {
+  background: #2d2d2d;
+  color: #666;
+  border-color: #4a4a4a;
 }
 
 .unavailable-label {
@@ -575,6 +605,7 @@
   
   .calendar-day {
     font-size: 0.875rem;
+    min-height: 50px;
   }
   
   .modal-footer {
@@ -584,6 +615,21 @@
   .btn-cancel,
   .btn-confirm {
     width: 100%;
+  }
+
+  /* Fix for very small screens */
+  .calendar-section {
+    padding: 0.5rem; /* Reduce outer padding */
+  }
+
+  .calendar-day {
+    font-size: 0.8rem;
+    min-height: 40px;
+  }
+  
+  .calendar-header-day {
+    font-size: 0.7rem; /* Shrink "Mon, Tue..." text */
+    padding: 0.5rem 0;
   }
 }
 

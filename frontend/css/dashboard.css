@@ -50,7 +50,7 @@
 
 .btn-close-booking {
     position: absolute;
-    top: 1rem;
+    top: 0.5rem;
     right: 1rem;
     background: linear-gradient(135deg, #d4af37 0%, #f4e4bc 100%);
     border: none;

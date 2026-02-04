@@ -13,6 +13,8 @@ const CustomerDashboard = () => {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [themeMode, setThemeMode] = useState('manual'); // 'manual', 'auto', 'system'
   const [profileForm, setProfileForm] = useState({
     name: user.name || '',
     email: user.email || '',
@@ -28,7 +30,48 @@ const CustomerDashboard = () => {
   // --- Load Data ---
   useEffect(() => {
     loadCustomerData();
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
   }, []);
+
+  // --- Theme Management ---
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light');
+    setThemeMode('manual');
+  };
+
+  const setTheme = (theme) => {
+    if (theme === 'auto') {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const shouldSetDark = systemPrefersDark;
+      setIsDarkMode(shouldSetDark);
+      document.documentElement.setAttribute('data-theme', shouldSetDark ? 'dark' : 'light');
+      localStorage.removeItem('theme');
+      setThemeMode('auto');
+    } else if (theme === 'system') {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(systemPrefersDark);
+      document.documentElement.setAttribute('data-theme', systemPrefersDark ? 'dark' : 'light');
+      localStorage.removeItem('theme');
+      setThemeMode('system');
+    } else {
+      // manual light/dark
+      const shouldSetDark = theme === 'dark';
+      setIsDarkMode(shouldSetDark);
+      localStorage.setItem('theme', shouldSetDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', shouldSetDark ? 'dark' : 'light');
+      setThemeMode('manual');
+    }
+  };
 
   const loadCustomerData = async () => {
     try {
@@ -117,7 +160,8 @@ const CustomerDashboard = () => {
     { id: 'appointments', label: 'My Appointments', icon: 'calendar3', badge: appointments.filter(a => a.status === 'pending').length },
     { id: 'payments', label: 'Payments', icon: 'wallet2', badge: payments.filter(p => p.status === 'pending').length },
     { id: 'treatment-history', label: 'Treatment History', icon: 'file-earmark-medical' },
-    { id: 'profile', label: 'Profile', icon: 'person' }
+    { id: 'profile', label: 'Profile', icon: 'person' },
+    { id: 'settings', label: 'Settings', icon: 'gear' }
   ];
 
   // --- Helper Functions ---
@@ -153,6 +197,15 @@ const CustomerDashboard = () => {
   ];
 
   // --- Tab Content Components ---
+  const renderSettings = () => {
+    if (window.Settings) {
+      return React.createElement(window.Settings, { 
+        user: user,
+        onThemeChange: setTheme 
+      });
+    }
+    return React.createElement('div', null, 'Loading settings...');
+  };
   const renderOverview = () => React.createElement('div', { className: 'dashboard-content' },
     React.createElement('div', { className: 'welcome-section' },
       React.createElement('h1', null, `Welcome back, ${firstName}!`),
@@ -418,6 +471,7 @@ const CustomerDashboard = () => {
       case 'payments': return renderPayments();
       case 'treatment-history': return renderTreatmentHistory();
       case 'profile': return renderProfile();
+      case 'settings': return renderSettings();
       default: return renderOverview();
     }
   };
